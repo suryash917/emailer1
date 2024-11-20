@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Generator with Footer</title>
+  <style>
+    body {
+      font-family: 'Avenir', Arial, Helvetica, sans-serif; /* Set font to Avenir */
+      background-color: #f9fafa;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    .container {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .form-container, .preview-container {
+      padding: 20px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      font-size: 1.8rem;
+      color: #1861f5;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: 12px;
+      font-size: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    textarea {
+      height: 100px;
+    }
+    button {
+      background-color: #1861f5;
+      color: white;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #1a298e;
+    }
+    .footer {
+      font-size: 0.9rem;
+      color: #777;
+      text-align: center;
+      margin-top: 20px;
+      padding-top: 10px;
+      border-top: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Form Section -->
+    <div class="form-container">
+      <h1>Email Generator</h1>
+      <form id="emailerForm">
+        <div class="form-group">
+          <label for="banner">Upload Header Banner (600px wide):</label>
+          <input type="file" id="bannerUpload" accept="image/*" required>
+        </div>
+
+        <div class="form-group">
+          <label for="body">Body Text:</label>
+          <textarea id="body" placeholder="Enter email content here" required></textarea>
+        </div>
+
+        <div class="form-group cta-group">
+          <label>
+            <input type="checkbox" id="ctaToggle">
+            Include CTA
+          </label>
+        </div>
+
+        <div class="form-group">
+          <input type="text" id="ctaText" placeholder="Enter CTA text" disabled>
+          <input type="url" id="ctaLink" placeholder="Enter CTA link" disabled>
+        </div>
+
+        <button type="button" onclick="generatePreview()">Generate Preview</button>
+      </form>
+    </div>
+
+    <!-- Footer Section (hidden in preview) -->
+    <div class="footer">
+      <p>Script compiled by Surya Shrestha &copy; 2024</p>
+    </div>
+  </div>
+
+  <script>
+    const ctaToggle = document.getElementById("ctaToggle");
+    const ctaText = document.getElementById("ctaText");
+    const ctaLink = document.getElementById("ctaLink");
+    const bannerUpload = document.getElementById("bannerUpload");
+    let bannerDataUrl = "";
+
+    ctaToggle.addEventListener("change", () => {
+      const isChecked = ctaToggle.checked;
+      ctaText.disabled = !isChecked;
+      ctaLink.disabled = !isChecked;
+    });
+
+    bannerUpload.addEventListener("change", () => {
+      const file = bannerUpload.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          bannerDataUrl = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function generatePreview() {
+      const body = document.getElementById("body").value;
+      const ctaEnabled = ctaToggle.checked;
+      const cta = ctaEnabled
+        ? `<table align="center" style="margin-top:20px;"><tr><td><a href="${ctaLink.value}" style="display:inline-block; padding:10px 20px; background-color:#1861f5; color:#ffffff; text-decoration:none; border-radius:4px; font-weight:600;">${ctaText.value}</a></td></tr></table>`
+        : "";
+
+      if (!bannerDataUrl) {
+        alert("Please upload a header banner image.");
+        return;
+      }
+
+      const emailHTML = `
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="font-family: 'Avenir', Arial, Helvetica, sans-serif; color: #333; max-width: 600px; margin: auto; background: #ffffff; border: 1px solid #ddd; border-radius: 8px;">
+          <tr>
+            <td style="padding: 20px; text-align: center;">
+              <img src="${bannerDataUrl}" alt="Header Banner" style="width: 600px; height: auto; border-radius: 5px;">
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 20px; font-size: 16px; line-height: 1.6;">
+              ${body.replace(/\n/g, "<br>")}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 20px; text-align: center;">
+              ${cta}
+            </td>
+          </tr>
+        </table>
+      `;
+
+      openPreviewPopup(emailHTML);
+    }
+
+    function openPreviewPopup(emailHTML) {
+      const popupWindow = window.open("", "_blank", "width=800,height=600");
+      popupWindow.document.write(`
+        <html>
+        <head>
+          <title>Email Preview</title>
+          <style>
+            body {
+              font-family: 'Avenir', Arial, Helvetica, sans-serif;
+              color: #333;
+              margin: 0;
+              padding: 0;
+            }
+          </style>
+        </head>
+        <body>
+          <div style="max-width: 600px; margin: auto; padding: 20px;">
+            ${emailHTML}
+          </div>
+        </body>
+        </html>
+      `);
+      popupWindow.document.close();
+    }
+  </script>
+</body>
+</html>
